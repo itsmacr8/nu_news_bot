@@ -1,3 +1,4 @@
+# Scrap National University website and email new examination related news link with heading.
 import requests
 import time
 import os
@@ -5,13 +6,18 @@ import smtplib
 from bs4 import BeautifulSoup
 from ssl import create_default_context
 from email.message import EmailMessage
-from _received_news import prev_headings, prev_links
 
 
 class NUNewsBot:
     news_headings = []
     news_links = []
     user_info = []
+    new_headings = []
+    new_links = []
+
+    def __init__(self, prev_headings, prev_links):
+        self.prev_headings = prev_headings
+        self.prev_links = prev_links
 
     def init(self):
         soup = BeautifulSoup(self.get_webpage(), 'html.parser')
@@ -52,27 +58,24 @@ class NUNewsBot:
             *   Store the new news heading and link to their appropriate list.
         """
         top_10_news = soup.select(selector='.news-item a')[:10]
-        new_headings = []
-        new_links = []
         for news in top_10_news:
             new_heading = news.getText().strip()
             new_link = f"https://www.nu.ac.bd/{news.get('href')}"
-            new_headings.append(new_heading)
-            new_links.append(new_link)
-        self.is_new_news(new_headings, new_links)
-        self.add_new_news(new_headings, new_links)
+            self.new_headings.append(new_heading)
+            self.new_links.append(new_link)
+        self.is_new_news()
 
-    def is_new_news(self, new_headings, new_links):
+    def is_new_news(self):
         """Update the news_headings and news_links list with the latest news that are not found in the _received_news file."""
         self.news_headings = [
-            nh for nh in new_headings if nh not in prev_headings]
+            nh for nh in self.new_headings if nh not in self.prev_headings]
         self.news_links = [
-            link for link in new_links if link not in prev_links]
+            link for link in self.new_links if link not in self.prev_links]
 
-    def add_new_news(self, new_headings, new_links):
+    def add_new_news(self, filename):
         """Update _received_news file with the today's latest news."""
-        content = f'prev_headings = {new_headings}\n\nprev_links = {new_links}'
-        with open('_received_news.py', mode='w', encoding='UTF-8') as file:
+        content = f'prev_headings = {self.new_headings}\n\nprev_links = {self.new_links}'
+        with open(filename, mode='w', encoding='UTF-8') as file:
             file.write(content)
 
     def get_recipients(self):
@@ -127,3 +130,9 @@ class NUNewsBot:
                 smtp.send_message(msg)
             except smtplib.SMTPRecipientsRefused as e:
                 print('Recipient refused', e)
+
+
+class MyBot:
+    def functionName(self, filename):
+        with open(filename, mode='w', encoding='UTF-8') as file:
+            file.write('content')
