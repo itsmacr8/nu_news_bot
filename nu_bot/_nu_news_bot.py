@@ -1,4 +1,3 @@
-# Scrap National University website and email new examination related news link with heading.
 import requests
 import time
 import os
@@ -8,12 +7,14 @@ from ssl import create_default_context
 from email.message import EmailMessage
 
 
-class NUNewsBot:
+class NUBot:
+    """ Scrap National University website and email new news link with heading. """
     news_headings = []
     news_links = []
     user_info = []
     new_headings = []
     new_links = []
+    bot_info = {}
 
     def __init__(self, prev_headings, prev_links):
         self.prev_headings = prev_headings
@@ -28,9 +29,9 @@ class NUNewsBot:
                 message = self.get_message(user['name'], user['email'])
                 self.send_mail(message)
                 time.sleep(5)
-            print('New has been sent to your email address.')
+            self.bot_info['execution_result'] = 'New news found'
         else:
-            print('No new news found.')
+            self.bot_info['execution_result'] = 'No new news found.'
 
     def get_webpage(self):
         """Return Scrap website."""
@@ -72,12 +73,6 @@ class NUNewsBot:
         self.news_links = [
             link for link in self.new_links if link not in self.prev_links]
 
-    def add_new_news(self, filename):
-        """Update _received_news file with the today's latest news."""
-        content = f'prev_headings = {self.new_headings}\n\nprev_links = {self.new_links}'
-        with open(filename, mode='w', encoding='UTF-8') as file:
-            file.write(content)
-
     def get_recipients(self):
         """Loop over the sheet_data and add every recipient"""
         sheet_data = self.get_sheet_data()
@@ -107,7 +102,7 @@ class NUNewsBot:
         mail = {
             'intro': f'Dear {recipient_name},\n\nআপনাকে জাতীয় বিশ্ববিদ্যালয়ের আজকের সর্বশেষ খবর জানানোর জন্য এই ইমেইলটি পাঠানো হয়েছে।',
             'body': ''.join(
-                f'{news_heading}বিস্তারিত জানার জন্য নিচের লিংকে ক্লিক করুন।\n{self.news_links[num]}\n\n\n' for num, news_heading in enumerate(self.news_headings)),
+                f'{heading}বিস্তারিত জানার জন্য নিচের লিংকে ক্লিক করুন।\n{link}\n\n\n' for heading, link in zip(self.news_headings, self.news_links)),
         }
         message = EmailMessage()
         message['From'] = os.environ.get('sender_email')
@@ -131,8 +126,19 @@ class NUNewsBot:
             except smtplib.SMTPRecipientsRefused as e:
                 print('Recipient refused', e)
 
+    def get_bot_info(self):
+        current_time = self.get_current_time()
+        self.bot_info['name'] = 'NuBot'
+        self.bot_info['execution_time'] = current_time
+        return self.bot_info
 
-class MyBot:
-    def functionName(self, filename):
+    def get_current_time(self):
+        from datetime import datetime
+        now = datetime.now()
+        return datetime(day=now.day, month=now.month, year=now.year, hour=now.hour, minute=now.minute).strftime('%d %b, %Y; %I:%M %p')
+
+    def add_new_news(self, filename):
+        """Update _received_news file with the today's latest news."""
+        content = f'prev_headings = {self.new_headings}\n\nprev_links = {self.new_links}'
         with open(filename, mode='w', encoding='UTF-8') as file:
-            file.write('content')
+            file.write(content)

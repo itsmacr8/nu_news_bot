@@ -1,0 +1,55 @@
+*,
+*::after,
+*::before {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    line-height: 1.5;
+    font-size: 1.125rem;
+    height: 100vh;
+    display: grid;
+    place-items: center;
+}
+
+h1,
+h2,
+h3 {
+    line-height: 1;
+}
+
+.container {
+    width: 90%;
+    max-width: 1600px;
+    margin-inline: auto;
+}
+
+.responsive-table {
+    overflow-x: auto;
+}
+
+table,
+td,
+th {
+    border: 1px solid;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th,
+td {
+    text-align: center;
+    font-size: 1rem;
+}
+
+td {
+    padding: 0.625rem;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
